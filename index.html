@@ -1,126 +1,112 @@
-<!-- Header professionnel -->
-<div style="background: linear-gradient(135deg, #1e40af 0%, #3730a3 50%, #581c87 100%); color: white; padding: 40px; text-align: center; position: relative;">
-  <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 100\" fill=\"%23ffffff\" opacity=\"0.1\"><polygon points=\"0,0 1000,0 1000,60 0,100\"/></svg>') no-repeat center bottom; background-size: cover;"></div>
-  <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.8px; position: relative;">Simulateur de Capacité d'Endettement</h1>
-  <p style="margin: 12px 0 0 0; opacity: 0.95; font-size: 18px; font-weight: 400; position: relative;">Calculs certifiés conformes aux standards bancaires</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Capacité d'Endettement</title>
+    <meta name="description" content="Simulateur gratuit pour calculer votre capacité d'emprunt et mensualités de crédit immobilier">
+    <style>
+        body { margin: 0; padding: 0; background: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+  <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">Simulateur de Capacité d'Endettement</h1>
+  <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Calculez votre mensualité et capacité d'emprunt</p>
 </div>
 
-<div style="padding: 50px 40px;">
+<div style="padding: 40px;">
   
-  <!-- Paramètres avec design moderne -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 35px; margin-bottom: 40px;">
+  <!-- Configuration des paramètres -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
     
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1e293b; font-size: 15px;">💰 Montant du prêt (€)</label>
-      <input type="number" id="loanAmount" value="250000" style="width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: all 0.2s; background: white;" placeholder="Ex: 250000">
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Montant du prêt (€)</label>
+      <input type="number" id="loanAmount" value="250000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;" placeholder="Ex: 250000">
     </div>
 
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1e293b; font-size: 15px;">🏦 Apport personnel (€)</label>
-      <input type="number" id="downPayment" value="50000" style="width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: all 0.2s; background: white;" placeholder="Ex: 50000">
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Apport personnel (€)</label>
+      <input type="number" id="downPayment" value="50000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;" placeholder="Ex: 50000">
     </div>
 
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1e293b; font-size: 15px;">📅 Durée du prêt</label>
-      <input type="range" id="loanDuration" min="5" max="30" value="20" style="width: 100%; margin-bottom: 8px; accent-color: #3b82f6;">
-      <span id="durationDisplay" style="color: #64748b; font-size: 14px; font-weight: 500;">20 années</span>
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Durée du prêt (années)</label>
+      <input type="range" id="loanDuration" min="5" max="30" value="20" style="width: 100%; margin-bottom: 5px;">
+      <span id="durationDisplay" style="color: #6b7280; font-size: 14px;">20 années</span>
     </div>
 
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1e293b; font-size: 15px;">📈 Taux d'intérêt nominal</label>
-      <input type="range" id="interestRate" min="0.5" max="6" step="0.05" value="3.5" style="width: 100%; margin-bottom: 8px; accent-color: #3b82f6;">
-      <span id="rateDisplay" style="color: #64748b; font-size: 14px; font-weight: 500;">3.50%</span>
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Taux d'intérêt (%)</label>
+      <input type="range" id="interestRate" min="0.5" max="6" step="0.05" value="3.5" style="width: 100%; margin-bottom: 5px;">
+      <span id="rateDisplay" style="color: #6b7280; font-size: 14px;">3.50%</span>
     </div>
 
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1e293b; font-size: 15px;">🛡️ Assurance emprunteur</label>
-      <input type="range" id="insurance" min="0" max="1.2" step="0.01" value="0.35" style="width: 100%; margin-bottom: 8px; accent-color: #3b82f6;">
-      <span id="insuranceDisplay" style="color: #64748b; font-size: 14px; font-weight: 500;">0.35%</span>
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Assurance emprunteur (%)</label>
+      <input type="range" id="insurance" min="0" max="1" step="0.01" value="0.35" style="width: 100%; margin-bottom: 5px;">
+      <span id="insuranceDisplay" style="color: #6b7280; font-size: 14px;">0.35%</span>
     </div>
 
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-      <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1e293b; font-size: 15px;">💼 Revenus nets mensuels (€)</label>
-      <input type="number" id="monthlyIncome" value="5000" style="width: 100%; padding: 14px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: all 0.2s; background: white;" placeholder="Ex: 5000">
+    <div>
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Revenus nets mensuels (€)</label>
+      <input type="number" id="monthlyIncome" value="5000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;" placeholder="Ex: 5000">
     </div>
 
   </div>
 
-  <!-- Résultats principaux -->
-  <div style="background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); border-radius: 16px; padding: 40px; border: 1px solid #cbd5e1; margin-bottom: 30px;">
+  <!-- Résultats -->
+  <div style="background: #f9fafb; border-radius: 12px; padding: 30px; border: 1px solid #e5e7eb;">
     
-    <h2 style="margin: 0 0 25px 0; color: #1e293b; font-size: 22px; font-weight: 700; text-align: center;">📊 Résultats de la simulation</h2>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 35px;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
       
-      <div style="text-align: center; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
-        <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Mensualité totale</div>
-        <div id="monthlyPayment" style="font-size: 32px; font-weight: 800; color: #1e293b; margin-bottom: 5px;">1 245 €</div>
-        <div style="font-size: 12px; color: #64748b;">Capital + intérêts + assurance</div>
+      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">MENSUALITÉ</div>
+        <div id="monthlyPayment" style="font-size: 28px; font-weight: 700; color: #1f2937;">1 245 €</div>
       </div>
 
-      <div style="text-align: center; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
-        <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Coût total du crédit</div>
-        <div id="totalCost" style="font-size: 32px; font-weight: 800; color: #dc2626; margin-bottom: 5px;">65 750 €</div>
-        <div style="font-size: 12px; color: #64748b;">Intérêts + assurance</div>
+      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">COÛT TOTAL DU CRÉDIT</div>
+        <div id="totalCost" style="font-size: 28px; font-weight: 700; color: #dc2626;">48 750 €</div>
       </div>
 
-      <div style="text-align: center; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
-        <div style="font-size: 13px; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Taux d'endettement</div>
-        <div id="debtRatio" style="font-size: 32px; font-weight: 800; color: #059669; margin-bottom: 5px;">24.9%</div>
-        <div style="font-size: 12px; color: #64748b;">Limite recommandée: 35%</div>
+      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">TAUX D'ENDETTEMENT</div>
+        <div id="debtRatio" style="font-size: 28px; font-weight: 700; color: #059669;">24.9%</div>
       </div>
 
     </div>
 
-    <!-- Indicateur de faisabilité amélioré -->
-    <div id="feasibilityIndicator" style="padding: 20px; border-radius: 12px; text-align: center; font-weight: 600; font-size: 16px; background: #d1fae5; color: #065f46; border: 2px solid #10b981; transition: all 0.3s;">
+    <!-- Indicateur de faisabilité -->
+    <div id="feasibilityIndicator" style="padding: 20px; border-radius: 8px; text-align: center; font-weight: 600; background: #d1fae5; color: #065f46; border: 2px solid #10b981;">
       ✓ Votre projet est finançable
     </div>
 
-  </div>
-
-  <!-- Détails techniques -->
-  <div style="background: white; border-radius: 16px; padding: 35px; border: 1px solid #e2e8f0;">
-    <h3 style="margin: 0 0 25px 0; color: #1e293b; font-size: 20px; font-weight: 700; display: flex; align-items: center;">
-      <span style="margin-right: 10px;">🔍</span>
-      Détail du financement
-    </h3>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px 40px; font-size: 15px; line-height: 1.6;">
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">Prix total du bien</span>
-        <span id="totalPrice" style="font-weight: 700; color: #1e293b;">300 000 €</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">Montant financé</span>
-        <span id="financedAmount" style="font-weight: 700; color: #1e293b;">250 000 €</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">Intérêts totaux</span>
-        <span id="totalInterest" style="font-weight: 700; color: #dc2626;">48 105 €</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">Assurance totale</span>
-        <span id="totalInsurance" style="font-weight: 700; color: #dc2626;">17 500 €</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">TAEG (calculé précisément)</span>
-        <span id="apr" style="font-weight: 700; color: #1e293b; background: #fef3c7; padding: 2px 8px; border-radius: 4px;">3.85%</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">Capacité d'emprunt restante</span>
-        <span id="remainingCapacity" style="font-weight: 700; color: #059669;">500 €/mois</span>
+    <!-- Détails supplémentaires -->
+    <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+      <h3 style="margin: 0 0 15px 0; color: #374151; font-size: 18px;">Détail du financement</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+        <div><strong>Prix total du bien :</strong> <span id="totalPrice">300 000 €</span></div>
+        <div><strong>Montant financé :</strong> <span id="financedAmount">250 000 €</span></div>
+        <div><strong>Intérêts totaux :</strong> <span id="totalInterest">48 105 €</span></div>
+        <div><strong>Assurance totale :</strong> <span id="totalInsurance">17 500 €</span></div>
+        <div><strong>TAEG :</strong> <span id="apr">3.85%</span></div>
+        <div><strong>Capacité d'emprunt restante :</strong> <span id="remainingCapacity">252 €/mois</span></div>
       </div>
     </div>
+
   </div>
 
-  <!-- Footer professionnel -->
-  <div style="margin-top: 40px; padding: 25px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
-    <div style="text-align: center; color: #64748b; font-size: 14px; line-height: 1.5;">
-      <p style="margin: 0 0 8px 0; font-weight: 600;">⚖️ Conformité réglementaire</p>
-      <p style="margin: 0;">Simulation réalisée selon les standards bancaires en vigueur. Le TAEG est calculé selon la méthode officielle (TRI). Les conditions réelles peuvent varier selon votre profil et l'établissement prêteur.</p>
-    </div>
+  <!-- Footer -->
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 14px;">
+    <p style="margin: 0;">Simulation à titre indicatif. Les conditions réelles peuvent varier selon votre profil et l'établissement prêteur.</p>
   </div>
 
 </div>
 
+
+</body>
+</html>
