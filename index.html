@@ -1,95 +1,205 @@
-<!-- Header simplifié -->
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-  <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">Simulateur de Capacité d'Endettement</h1>
-  <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Calculez votre mensualité et capacité d'emprunt</p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Capacité d'Endettement</title>
+</head>
+<body style="margin: 0; padding: 0; background: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+
+<div style="max-width: 800px; margin: 0 auto; background: #f8fafc; min-height: 100vh; padding: 20px;">
+  <div style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
+    
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">Simulateur de Capacité d'Endettement</h1>
+      <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Calculez votre mensualité et capacité d'emprunt</p>
+    </div>
+
+    <div style="padding: 40px;">
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+        
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Montant du prêt (€)</label>
+          <input type="number" id="loanAmount" value="250000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Apport personnel (€)</label>
+          <input type="number" id="downPayment" value="50000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Durée du prêt (années)</label>
+          <input type="range" id="loanDuration" min="5" max="30" value="20" style="width: 100%; margin-bottom: 5px;">
+          <span id="durationDisplay" style="color: #6b7280; font-size: 14px;">20 années</span>
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Taux d'intérêt (%)</label>
+          <input type="range" id="interestRate" min="0.5" max="6" step="0.05" value="3.5" style="width: 100%; margin-bottom: 5px;">
+          <span id="rateDisplay" style="color: #6b7280; font-size: 14px;">3.50%</span>
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Assurance emprunteur (%)</label>
+          <input type="range" id="insurance" min="0" max="1" step="0.01" value="0.35" style="width: 100%; margin-bottom: 5px;">
+          <span id="insuranceDisplay" style="color: #6b7280; font-size: 14px;">0.35%</span>
+        </div>
+
+        <div>
+          <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Revenus nets mensuels (€)</label>
+          <input type="number" id="monthlyIncome" value="5000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
+        </div>
+
+      </div>
+
+      <div style="background: #f9fafb; border-radius: 12px; padding: 30px; border: 1px solid #e5e7eb;">
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+          
+          <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">MENSUALITÉ</div>
+            <div id="monthlyPayment" style="font-size: 28px; font-weight: 700; color: #1f2937;">1 245 €</div>
+          </div>
+
+          <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">COÛT TOTAL DU CRÉDIT</div>
+            <div id="totalCost" style="font-size: 28px; font-weight: 700; color: #dc2626;">48 750 €</div>
+          </div>
+
+          <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">TAUX D'ENDETTEMENT</div>
+            <div id="debtRatio" style="font-size: 28px; font-weight: 700; color: #059669;">24.9%</div>
+          </div>
+
+        </div>
+
+        <div id="feasibilityIndicator" style="padding: 20px; border-radius: 8px; text-align: center; font-weight: 600; background: #d1fae5; color: #065f46; border: 2px solid #10b981;">
+          ✓ Votre projet est finançable
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <h3 style="margin: 0 0 15px 0; color: #374151; font-size: 18px;">Détail du financement</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+            <div><strong>Prix total du bien :</strong> <span id="totalPrice">300 000 €</span></div>
+            <div><strong>Montant financé :</strong> <span id="financedAmount">250 000 €</span></div>
+            <div><strong>Intérêts totaux :</strong> <span id="totalInterest">48 105 €</span></div>
+            <div><strong>Assurance totale :</strong> <span id="totalInsurance">17 500 €</span></div>
+            <div><strong>TAEG :</strong> <span id="apr">3.85%</span></div>
+            <div><strong>Capacité d'emprunt restante :</strong> <span id="remainingCapacity">252 €/mois</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 14px;">
+        <p style="margin: 0;">Simulation à titre indicatif. Les conditions réelles peuvent varier selon votre profil et l'établissement prêteur.</p>
+      </div>
+
+    </div>
+  </div>
 </div>
 
-<div style="padding: 40px;">
+<script>
+// Simple et efficace !
+function toNumber(id) {
+  const val = document.getElementById(id).value;
+  return parseFloat(val) || 0;
+}
+
+function formatNumber(num) {
+  return new Intl.NumberFormat('fr-FR').format(Math.round(num));
+}
+
+function calculateLoan() {
+  const loanAmount = toNumber('loanAmount');
+  const downPayment = toNumber('downPayment');
+  const duration = parseInt(document.getElementById('loanDuration').value);
+  const rate = parseFloat(document.getElementById('interestRate').value) / 100;
+  const insuranceRate = parseFloat(document.getElementById('insurance').value) / 100;
+  const monthlyIncome = toNumber('monthlyIncome');
   
-  <!-- Configuration des paramètres -->
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-    
-    <div>
-      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Montant du prêt (€)</label>
-      <input type="number" id="loanAmount" value="250000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;" placeholder="Ex: 250000">
-    </div>
+  // Mise à jour des affichages
+  document.getElementById('durationDisplay').textContent = duration + ' années';
+  document.getElementById('rateDisplay').textContent = parseFloat(document.getElementById('interestRate').value).toFixed(2) + '%';
+  document.getElementById('insuranceDisplay').textContent = parseFloat(document.getElementById('insurance').value).toFixed(2) + '%';
+  
+  const months = duration * 12;
+  const monthlyRate = rate / 12;
+  
+  // Calcul mensualité
+  let monthlyCapitalInterest;
+  if (monthlyRate > 0) {
+    monthlyCapitalInterest = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+  } else {
+    monthlyCapitalInterest = loanAmount / months;
+  }
+  
+  const monthlyInsurance = (loanAmount * insuranceRate) / 12;
+  const totalMonthlyPayment = monthlyCapitalInterest + monthlyInsurance;
+  
+  const totalInterestPaid = (monthlyCapitalInterest * months) - loanAmount;
+  const totalInsurancePaid = monthlyInsurance * months;
+  const totalCost = totalInterestPaid + totalInsurancePaid;
+  
+  const debtRatio = monthlyIncome > 0 ? (totalMonthlyPayment / monthlyIncome) * 100 : 0;
+  
+  // TAEG approximatif
+  const taeg = loanAmount > 0 ? ((totalCost / loanAmount) / duration) * 100 : 0;
+  
+  const maxDebtCapacity = monthlyIncome * 0.35;
+  const remainingCapacity = Math.max(0, maxDebtCapacity - totalMonthlyPayment);
+  
+  // Affichage
+  document.getElementById('monthlyPayment').textContent = formatNumber(totalMonthlyPayment) + ' €';
+  document.getElementById('totalCost').textContent = formatNumber(totalCost) + ' €';
+  document.getElementById('debtRatio').textContent = debtRatio.toFixed(1) + '%';
+  
+  document.getElementById('totalPrice').textContent = formatNumber(loanAmount + downPayment) + ' €';
+  document.getElementById('financedAmount').textContent = formatNumber(loanAmount) + ' €';
+  document.getElementById('totalInterest').textContent = formatNumber(totalInterestPaid) + ' €';
+  document.getElementById('totalInsurance').textContent = formatNumber(totalInsurancePaid) + ' €';
+  document.getElementById('apr').textContent = taeg.toFixed(2) + '%';
+  document.getElementById('remainingCapacity').textContent = formatNumber(remainingCapacity) + ' €/mois';
+  
+  // Faisabilité
+  const indicator = document.getElementById('feasibilityIndicator');
+  if (monthlyIncome === 0) {
+    indicator.style.background = '#fef3c7';
+    indicator.style.color = '#92400e';
+    indicator.style.borderColor = '#f59e0b';
+    indicator.textContent = '⚠ Veuillez renseigner vos revenus';
+  } else if (debtRatio <= 33) {
+    indicator.style.background = '#d1fae5';
+    indicator.style.color = '#065f46';
+    indicator.style.borderColor = '#10b981';
+    indicator.textContent = '✓ Votre projet est finançable';
+  } else if (debtRatio <= 35) {
+    indicator.style.background = '#fef3c7';
+    indicator.style.color = '#92400e';
+    indicator.style.borderColor = '#f59e0b';
+    indicator.textContent = '⚠ Financement possible mais serré';
+  } else {
+    indicator.style.background = '#fee2e2';
+    indicator.style.color = '#991b1b';
+    indicator.style.borderColor = '#ef4444';
+    indicator.textContent = '✗ Taux d\'endettement trop élevé';
+  }
+}
 
-    <div>
-      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Apport personnel (€)</label>
-      <input type="number" id="downPayment" value="50000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;" placeholder="Ex: 50000">
-    </div>
+// Événements
+document.getElementById('loanAmount').addEventListener('input', calculateLoan);
+document.getElementById('downPayment').addEventListener('input', calculateLoan);
+document.getElementById('loanDuration').addEventListener('input', calculateLoan);
+document.getElementById('interestRate').addEventListener('input', calculateLoan);
+document.getElementById('insurance').addEventListener('input', calculateLoan);
+document.getElementById('monthlyIncome').addEventListener('input', calculateLoan);
 
-    <div>
-      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Durée du prêt (années)</label>
-      <input type="range" id="loanDuration" min="5" max="30" value="20" style="width: 100%; margin-bottom: 5px;">
-      <span id="durationDisplay" style="color: #6b7280; font-size: 14px;">20 années</span>
-    </div>
+// Calcul initial
+calculateLoan();
+</script>
 
-    <div>
-      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Taux d'intérêt (%)</label>
-      <input type="range" id="interestRate" min="0.5" max="6" step="0.05" value="3.5" style="width: 100%; margin-bottom: 5px;">
-      <span id="rateDisplay" style="color: #6b7280; font-size: 14px;">3.50%</span>
-    </div>
-
-    <div>
-      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Assurance emprunteur (%)</label>
-      <input type="range" id="insurance" min="0" max="1" step="0.01" value="0.35" style="width: 100%; margin-bottom: 5px;">
-      <span id="insuranceDisplay" style="color: #6b7280; font-size: 14px;">0.35%</span>
-    </div>
-
-    <div>
-      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Revenus nets mensuels (€)</label>
-      <input type="number" id="monthlyIncome" value="5000" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;" placeholder="Ex: 5000">
-    </div>
-
-  </div>
-
-  <!-- Résultats -->
-  <div style="background: #f9fafb; border-radius: 12px; padding: 30px; border: 1px solid #e5e7eb;">
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-      
-      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">MENSUALITÉ</div>
-        <div id="monthlyPayment" style="font-size: 28px; font-weight: 700; color: #1f2937;">1 245 €</div>
-      </div>
-
-      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">COÛT TOTAL DU CRÉDIT</div>
-        <div id="totalCost" style="font-size: 28px; font-weight: 700; color: #dc2626;">48 750 €</div>
-      </div>
-
-      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">TAUX D'ENDETTEMENT</div>
-        <div id="debtRatio" style="font-size: 28px; font-weight: 700; color: #059669;">24.9%</div>
-      </div>
-
-    </div>
-
-    <!-- Indicateur de faisabilité -->
-    <div id="feasibilityIndicator" style="padding: 20px; border-radius: 8px; text-align: center; font-weight: 600; background: #d1fae5; color: #065f46; border: 2px solid #10b981;">
-      ✓ Votre projet est finançable
-    </div>
-
-    <!-- Détails supplémentaires -->
-    <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
-      <h3 style="margin: 0 0 15px 0; color: #374151; font-size: 18px;">Détail du financement</h3>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-        <div><strong>Prix total du bien :</strong> <span id="totalPrice">300 000 €</span></div>
-        <div><strong>Montant financé :</strong> <span id="financedAmount">250 000 €</span></div>
-        <div><strong>Intérêts totaux :</strong> <span id="totalInterest">48 105 €</span></div>
-        <div><strong>Assurance totale :</strong> <span id="totalInsurance">17 500 €</span></div>
-        <div><strong>TAEG :</strong> <span id="apr">3.85%</span></div>
-        <div><strong>Capacité d'emprunt restante :</strong> <span id="remainingCapacity">252 €/mois</span></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Footer simplifié -->
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 14px;">
-    <p style="margin: 0;">Simulation à titre indicatif. Les conditions réelles peuvent varier selon votre profil et l'établissement prêteur.</p>
-  </div>
-
-</div>
+</body>
+</html>
