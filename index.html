@@ -3,245 +3,1079 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulateur de Capacité d'Endettement</title>
+  <title>Simulateur crédit immobilier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --ink:        #0f1923;
+  --ink-soft:   #3d4f5e;
+  --ink-muted:  #7a8e9a;
+  --surface:    #f4f1eb;
+  --card:       #ffffff;
+  --border:     #ddd8ce;
+  --border-s:   #eee9e0;
+  --red:        #c0392b;
+  --amber:      #d97706;
+  --green:      #16a34a;
+  --blue:       #2563eb;
+  --red-bg:     #fdecea;
+  --amber-bg:   #fef3e2;
+  --green-bg:   #dcfce7;
+  --blue-bg:    #eff6ff;
+  --shadow:     0 2px 16px rgba(15,25,35,.07);
+  --radius:     4px;
+  --radius-lg:  12px;
+}
+
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);font-size:14px;line-height:1.5}
+
+/* ═══════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════ */
+.site-header{background:var(--ink);color:#fff;padding:32px 24px;position:relative;overflow:hidden}
+.site-header::before{content:'';position:absolute;right:-80px;top:-80px;width:340px;height:340px;border-radius:50%;background:rgba(192,57,43,.12);pointer-events:none}
+.site-header::after{content:'';position:absolute;right:80px;bottom:-50px;width:200px;height:200px;border-radius:50%;background:rgba(217,119,6,.09);pointer-events:none}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative;z-index:1}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#d97706;margin-bottom:8px}
+.site-header h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.15;color:#fff}
+.site-header h1 em{font-style:italic;color:#e9c99a}
+.header-sub{color:rgba(255,255,255,.5);font-size:13px;margin-top:6px}
+.header-badge{font-size:11px;line-height:1.5;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:10px 14px;color:rgba(255,255,255,.5);max-width:320px}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.main{max-width:1200px;margin:0 auto;padding:28px 20px 60px}
+.layout{display:grid;grid-template-columns:420px 1fr;gap:20px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.col-inputs,.col-results{display:flex;flex-direction:column;gap:16px}
+
+/* ═══════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════ */
+.card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;animation:fadeUp .35s ease both}
+.card:nth-child(2){animation-delay:.05s}
+.card:nth-child(3){animation-delay:.10s}
+.card:nth-child(4){animation-delay:.15s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card-head{display:flex;align-items:center;gap:10px;padding:16px 20px 13px;border-bottom:1px solid var(--border)}
+.card-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ci-red{background:var(--red-bg)} .ci-amber{background:var(--amber-bg)} .ci-green{background:var(--green-bg)} .ci-blue{background:var(--blue-bg)}
+.card-title{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-soft)}
+.card-body{padding:18px 20px}
+
+/* ═══════════════════════════════════════════
+   FORM
+═══════════════════════════════════════════ */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:540px){.field-row{grid-template-columns:1fr}}
+label{display:block;margin-bottom:6px;font-size:12px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--ink-muted)}
+.hint{font-size:11px;color:var(--ink-muted);line-height:1.4;margin-top:5px;font-style:italic}
+.sub-title{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.sep{border:none;border-top:1px solid var(--border-s);margin:16px 0}
+
+/* Input €*/
+.input-wrap{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff;transition:border-color .15s}
+.input-wrap:focus-within{border-color:var(--ink)}
+.input-wrap input{flex:1;border:none;outline:none;padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--ink);background:transparent;-moz-appearance:textfield}
+.input-wrap input::-webkit-outer-spin-button,.input-wrap input::-webkit-inner-spin-button{-webkit-appearance:none}
+.suffix-eur::after{content:'€';padding:9px 10px 9px 0;color:var(--ink-muted);font-size:12px}
+
+/* Select */
+select{width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:#fff;appearance:none;cursor:pointer;transition:border-color .15s}
+select:focus{outline:none;border-color:var(--ink)}
+
+/* Slider */
+.slider-row{display:flex;align-items:center;gap:10px}
+.slider-row input[type="range"]{flex:1;min-width:0}
+.slider-num{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.slider-num input{width:56px;padding:6px;text-align:right;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--ink);background:#fff;-moz-appearance:textfield;outline:none;transition:border-color .15s}
+.slider-num input::-webkit-outer-spin-button,.slider-num input::-webkit-inner-spin-button{-webkit-appearance:none}
+.slider-num input:focus{border-color:var(--ink)}
+.slider-num span{font-size:12px;color:var(--ink-muted)}
+input[type="range"]{-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--ink);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--ink);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
+
+/* Checkbox */
+.field-check{display:flex;flex-direction:column;justify-content:center}
+.check-label{display:flex;align-items:flex-start;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--ink-soft)}
+.check-label input[type="checkbox"]{margin-top:2px;flex-shrink:0;width:15px;height:15px;cursor:pointer}
+
+/* Toggle buttons */
+.toggle-group{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tog-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink-soft);transition:all .15s}
+.tog-btn.active,.tog-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Rental method box */
+.rental-box{background:var(--surface);border-radius:8px;padding:12px;border:1px solid var(--border-s)}
+.method-diff-note{font-style:normal !important}
+
+.badge{font-size:10px;padding:1px 6px;border-radius:10px;background:var(--blue-bg);color:var(--blue);font-weight:600;margin-left:4px;text-transform:none;letter-spacing:0}
+.hidden{display:none !important}
+
+/* ═══════════════════════════════════════════
+   KPIs
+═══════════════════════════════════════════ */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:540px){.kpi-grid{grid-template-columns:1fr}}
+.kpi{padding:14px 16px;border-radius:8px;border:1.5px solid var(--border);transition:border-color .25s}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ink-muted);margin-bottom:6px}
+.kpi-value{font-family:'DM Serif Display',serif;font-size:22px;line-height:1;color:var(--ink);transition:color .25s}
+.kpi-sub{font-size:11px;color:var(--ink-muted);margin-top:5px}
+
+/* ═══════════════════════════════════════════
+   BANNER
+═══════════════════════════════════════════ */
+.banner{padding:13px 16px;border-radius:8px;font-size:13px;font-weight:600;border:2px solid var(--border);background:var(--surface);margin-bottom:16px;transition:all .25s;line-height:1.4}
+.banner.ok  {background:var(--green-bg);border-color:var(--green);color:#14532d}
+.banner.warn{background:var(--amber-bg);border-color:var(--amber);color:#78350f}
+.banner.bad {background:var(--red-bg);  border-color:var(--red);  color:#7f1d1d}
+
+/* ═══════════════════════════════════════════
+   DETAIL TABLE
+═══════════════════════════════════════════ */
+.detail-table{width:100%;border-collapse:collapse;margin-bottom:12px}
+.detail-table td{padding:8px 2px;font-size:13px;border-bottom:1px solid var(--border-s)}
+.detail-table td:first-child{color:var(--ink-soft)}
+.detail-table td:last-child{text-align:right;font-weight:600;color:var(--ink)}
+.detail-table .row-total td{border-top:2px solid var(--border);padding-top:10px;padding-bottom:10px}
+.detail-table .row-sep td{border-top:2px solid var(--border);padding-top:10px}
+.detail-table .hint-cell{font-size:11px;color:var(--ink-muted);padding-left:12px}
+.taeg-note{font-size:11px;color:var(--ink-muted);line-height:1.5;font-style:italic;margin-bottom:12px}
+
+/* Alerts */
+#alertZone{display:flex;flex-direction:column;gap:8px}
+.alert-box{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.45}
+.alert-box.warn{background:var(--amber-bg);color:#78350f;border:1px solid #f0c06e}
+.alert-box.bad {background:var(--red-bg);  color:#7f1d1d;border:1px solid #f3a9a2}
+.alert-box .ai{flex-shrink:0;margin-top:1px}
+
+/* ═══════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════ */
+.chart-wrap{position:relative}
+.chart-note{text-align:center;font-size:11px;color:var(--ink-muted);margin-top:8px}
+
+/* ═══════════════════════════════════════════
+   AMORTISSEMENT
+═══════════════════════════════════════════ */
+.amort-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.amort-btn{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink-soft);transition:all .15s}
+.amort-btn.active,.amort-btn:not(.ghost):hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.amort-btn.ghost{color:var(--ink-muted)}
+.amort-btn.ghost:hover{background:var(--surface);border-color:var(--ink-soft)}
+.amort-wrap{max-height:340px;overflow-y:auto;border-radius:6px;border:1px solid var(--border)}
+#amortTable{width:100%;border-collapse:collapse;font-size:12px}
+#amortTable thead th{position:sticky;top:0;background:var(--ink);color:#fff;padding:9px 10px;text-align:right;font-size:10px;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+#amortTable thead th:first-child{text-align:left}
+#amortTable tbody tr{border-bottom:1px solid var(--border-s)}
+#amortTable tbody tr:hover{background:#fafaf7}
+#amortTable tbody td{padding:7px 10px;text-align:right;color:var(--ink-soft)}
+#amortTable tbody td:first-child{text-align:left;color:var(--ink);font-weight:500}
+#amortTable tbody tr.year-row td{background:var(--surface);font-weight:600;color:var(--ink);border-top:1px solid var(--border)}
+
+/* ═══════════════════════════════════════════
+   FOOTER LÉGAL
+═══════════════════════════════════════════ */
+.legal-footer{margin-top:32px;padding:20px 24px;background:var(--card);border-radius:var(--radius-lg);border:1px solid var(--border);font-size:12px;color:var(--ink-muted);line-height:1.7}
+.legal-footer strong{color:var(--ink-soft)}
+</style>
 </head>
+<body>
 
-<body style="margin: 0; padding: 0; background: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-
-  <div style="max-width: 800px; margin: 0 auto; background: #f8fafc; min-height: 100vh; padding: 20px;">
-    <div style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
-
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-        <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">Simulateur de Capacité d'Endettement</h1>
-        <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Calculez votre mensualité et capacité d'emprunt</p>
-      </div>
-
-      <div style="padding: 40px;">
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
-
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Montant du prêt (€)</label>
-            <input type="number" id="loanAmount" value="250000" min="0"
-              style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
-          </div>
-
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Apport personnel (€)</label>
-            <input type="number" id="downPayment" value="50000" min="0"
-              style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
-          </div>
-
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Durée du prêt (années)</label>
-            <input type="range" id="loanDuration" min="5" max="30" value="20" style="width: 100%; margin-bottom: 5px;">
-            <span id="durationDisplay" style="color: #6b7280; font-size: 14px;">20 années</span>
-          </div>
-
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Taux d'intérêt (%)</label>
-            <input type="range" id="interestRate" min="0.5" max="6" step="0.05" value="3.5" style="width: 100%; margin-bottom: 5px;">
-            <span id="rateDisplay" style="color: #6b7280; font-size: 14px;">3.50%</span>
-          </div>
-
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Assurance emprunteur (%)</label>
-            <input type="range" id="insurance" min="0" max="1" step="0.01" value="0.35" style="width: 100%; margin-bottom: 5px;">
-            <span id="insuranceDisplay" style="color: #6b7280; font-size: 14px;">0.35%</span>
-          </div>
-
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Revenus nets mensuels (€)</label>
-            <input type="number" id="monthlyIncome" value="5000" min="0"
-              style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; box-sizing: border-box;">
-          </div>
-
-        </div>
-
-        <div style="background: #f9fafb; border-radius: 12px; padding: 30px; border: 1px solid #e5e7eb;">
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-
-            <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">MENSUALITÉ</div>
-              <div id="monthlyPayment" style="font-size: 28px; font-weight: 700; color: #1f2937;">—</div>
-            </div>
-
-            <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">COÛT TOTAL DU CRÉDIT</div>
-              <div id="totalCost" style="font-size: 28px; font-weight: 700; color: #dc2626;">—</div>
-            </div>
-
-            <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <div style="font-size: 14px; color: #6b7280; margin-bottom: 5px;">TAUX D'ENDETTEMENT</div>
-              <div id="debtRatio" style="font-size: 28px; font-weight: 700; color: #059669;">—</div>
-            </div>
-
-          </div>
-
-          <div id="feasibilityIndicator" style="padding: 20px; border-radius: 8px; text-align: center; font-weight: 600; background: #fef3c7; color: #92400e; border: 2px solid #f59e0b;">
-            ⚠ Veuillez renseigner vos revenus
-          </div>
-
-          <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
-            <h3 style="margin: 0 0 15px 0; color: #374151; font-size: 18px;">Détail du financement</h3>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-              <div><strong>Prix total du bien :</strong> <span id="totalPrice">—</span></div>
-              <div><strong>Montant financé :</strong> <span id="financedAmount">—</span></div>
-              <div><strong>Intérêts totaux :</strong> <span id="totalInterest">—</span></div>
-              <div><strong>Assurance totale :</strong> <span id="totalInsurance">—</span></div>
-              <div><strong>TAEG :</strong> <span id="apr">—</span></div>
-              <div><strong>Capacité d'emprunt restante :</strong> <span id="remainingCapacity">—</span></div>
-            </div>
-          </div>
-
-        </div>
-
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 14px;">
-          <p style="margin: 0;">Simulation à titre indicatif. Les conditions réelles peuvent varier selon votre profil et l'établissement prêteur.</p>
-        </div>
-
-      </div>
+<!-- ══════════  HEADER  ══════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <p class="eyebrow">Outil de simulation</p>
+      <h1>Simulateur de crédit <em>immobilier</em></h1>
+      <p class="header-sub">Mensualité · Endettement · TAEG estimatif · Tableau d'amortissement</p>
+    </div>
+    <div class="header-badge">
+      ⚠ Simulation indicative — résultats non contractuels.<br>
+      Ne constitue pas une offre de crédit ni un conseil financier.
     </div>
   </div>
+</header>
 
-  <script>
-    // ---- Helpers ----
-    function toNumber(id) {
-      const v = parseFloat(document.getElementById(id).value);
-      return Number.isFinite(v) ? v : 0;
+<!-- ══════════  MAIN  ══════════ -->
+<main class="main">
+<div class="layout">
+
+<!-- ════════  INPUTS  ════════ -->
+<div class="col-inputs">
+
+  <!-- Projet -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-red">🏠</span><span class="card-title">Projet immobilier</span></div>
+    <div class="card-body">
+
+      <div class="field">
+        <label for="propertyPrice">Prix du bien (hors frais)</label>
+        <div class="input-wrap suffix-eur"><input id="propertyPrice" type="number" min="0" value="275000" step="1000"></div>
+        <p class="hint">Prix affiché, hors frais de notaire, d'agence et travaux.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="agencyFees">Frais d'agence</label>
+          <div class="input-wrap suffix-eur"><input id="agencyFees" type="number" min="0" value="0" step="100"></div>
+        </div>
+        <div class="field">
+          <label for="works">Travaux</label>
+          <div class="input-wrap suffix-eur"><input id="works" type="number" min="0" value="0" step="500"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Frais de notaire</label>
+        <div class="toggle-group">
+          <button class="tog-btn active" id="btnAnc">Ancien (~7.5%)</button>
+          <button class="tog-btn" id="btnNeuf">Neuf (~2.5%)</button>
+          <button class="tog-btn" id="btnMontant">Montant fixe</button>
+        </div>
+        <div id="notaryRateWrap">
+          <div class="slider-row">
+            <input type="range" id="notaryRate" min="1" max="12" step="0.1" value="7.5">
+            <div class="slider-num"><input type="number" id="notaryRateNum" min="1" max="12" step="0.1" value="7.5"><span>%</span></div>
+          </div>
+          <p class="hint" id="notaryEstimate">—</p>
+        </div>
+        <div id="notaryAmountWrap" class="hidden">
+          <div class="input-wrap suffix-eur"><input id="notaryAmount" type="number" min="0" step="100" value="20000"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="downPayment">Apport total disponible</label>
+        <div class="input-wrap suffix-eur"><input id="downPayment" type="number" min="0" value="55000" step="500"></div>
+        <p class="hint" id="downHint">L'apport doit couvrir en priorité les frais de notaire et les frais de crédit.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Crédit -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-amber">📊</span><span class="card-title">Paramètres du crédit</span></div>
+    <div class="card-body">
+
+      <div class="field">
+        <label>Durée du prêt</label>
+        <div class="slider-row">
+          <input type="range" id="loanYears" min="5" max="25" step="1" value="20">
+          <div class="slider-num"><input type="number" id="loanYearsNum" min="5" max="25" step="1" value="20"><span>ans</span></div>
+        </div>
+        <p class="hint">Durée max réglementaire : 25 ans (27 ans en VEFA selon HCSF 2021).</p>
+      </div>
+
+      <div class="field">
+        <label>Taux d'intérêt nominal annuel</label>
+        <div class="slider-row">
+          <input type="range" id="interestRate" min="0.10" max="8.00" step="0.01" value="3.50">
+          <div class="slider-num"><input type="number" id="interestRateNum" min="0.10" max="12" step="0.01" value="3.50"><span>%</span></div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Assurance emprunteur (annuelle)</label>
+          <div class="slider-row">
+            <input type="range" id="insuranceRate" min="0" max="1.50" step="0.01" value="0.35">
+            <div class="slider-num"><input type="number" id="insuranceRateNum" min="0" max="3" step="0.01" value="0.35"><span>%</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="insuranceMode">Base de calcul assurance</label>
+          <select id="insuranceMode">
+            <option value="initial" selected>Capital initial (constante)</option>
+            <option value="outstanding">Capital restant dû (décroissante)</option>
+          </select>
+          <p class="hint">Sur CRD = moins cher sur la durée, flux non constants.</p>
+        </div>
+      </div>
+
+      <hr class="sep">
+      <p class="sub-title">Frais de crédit</p>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fileFees">Frais de dossier</label>
+          <div class="input-wrap suffix-eur"><input id="fileFees" type="number" min="0" value="1000" step="50"></div>
+        </div>
+        <div class="field">
+          <label>Frais de garantie <span class="badge">% du capital</span></label>
+          <div class="slider-row">
+            <input type="range" id="guaranteeRate" min="0.5" max="2.5" step="0.1" value="1.2">
+            <div class="slider-num"><input type="number" id="guaranteeRateNum" min="0.5" max="2.5" step="0.1" value="1.2"><span>%</span></div>
+          </div>
+          <p class="hint">Caution type Crédit Logement ≈ 1–1.5%</p>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="brokerFees">Frais de courtage</label>
+          <div class="input-wrap suffix-eur"><input id="brokerFees" type="number" min="0" value="0" step="50"></div>
+        </div>
+        <div class="field field-check">
+          <label class="check-label" for="financeLoanFees">
+            <input id="financeLoanFees" type="checkbox">
+            Intégrer les frais de crédit dans le prêt
+          </label>
+          <p class="hint">Sinon ils sont couverts par l'apport.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Revenus -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-green">💶</span><span class="card-title">Revenus & charges</span></div>
+    <div class="card-body">
+
+      <div class="field-row">
+        <div class="field">
+          <label for="income1">Revenu principal net mensuel</label>
+          <div class="input-wrap suffix-eur"><input id="income1" type="number" min="0" value="4500" step="50"></div>
+          <p class="hint">Pris à 100%</p>
+        </div>
+        <div class="field">
+          <label for="income2">Revenu co-emprunteur net mensuel</label>
+          <div class="input-wrap suffix-eur"><input id="income2" type="number" min="0" value="0" step="50"></div>
+          <p class="hint">Pris à 100%</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Revenus fonciers nets mensuels</label>
+        <div class="input-wrap suffix-eur" style="margin-bottom:10px">
+          <input id="rentalIncome" type="number" min="0" value="0" step="50">
+        </div>
+        <div class="rental-box">
+          <div class="toggle-group" style="margin-bottom:8px">
+            <button class="tog-btn active" id="methodClassic">Méthode classique</button>
+            <button class="tog-btn" id="methodDiff">Méthode différentielle</button>
+          </div>
+          <div id="methodClassicInfo">
+            <div class="slider-row">
+              <input type="range" id="rentalFactor" min="0" max="100" step="1" value="70">
+              <div class="slider-num"><input type="number" id="rentalFactorNum" min="0" max="100" step="1" value="70"><span>%</span></div>
+            </div>
+            <p class="hint">Pourcentage des loyers retenu par la banque. Taux courant : 70%. Varie selon établissement et profil.</p>
+          </div>
+          <div id="methodDiffInfo" class="hidden">
+            <p class="hint method-diff-note">Méthode différentielle : les loyers sont déduits des charges de crédit existantes avant calcul du taux d'endettement. Revenus fonciers pris à 100%. Certaines banques l'appliquent pour les investisseurs. Vérifiez la méthode retenue par votre établissement.</p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <div class="field-row">
+        <div class="field">
+          <label for="existingCharges">Charges mensuelles existantes</label>
+          <div class="input-wrap suffix-eur"><input id="existingCharges" type="number" min="0" value="0" step="50"></div>
+          <p class="hint">Crédits conso, auto, pensions, loyer actuel.</p>
+        </div>
+        <div class="field">
+          <label>Seuil d'endettement cible</label>
+          <div class="slider-row">
+            <input type="range" id="debtCap" min="20" max="45" step="0.5" value="35">
+            <div class="slider-num"><input type="number" id="debtCapNum" min="20" max="45" step="0.5" value="35"><span>%</span></div>
+          </div>
+          <p class="hint">HCSF 2021 : 35% max. Dérogations possibles selon profil.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div><!-- /col-inputs -->
+
+<!-- ════════  RÉSULTATS  ════════ -->
+<div class="col-results">
+
+  <!-- KPIs + détail -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-red">💰</span><span class="card-title">Résultats</span></div>
+    <div class="card-body">
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Mensualité (mois 1)</div>
+          <div class="kpi-value" id="kpiMonthly">—</div>
+          <div class="kpi-sub" id="kpiMonthlySplit">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Taux d'endettement</div>
+          <div class="kpi-value" id="kpiDebt">—</div>
+          <div class="kpi-sub" id="kpiCapacity">Seuil cible : 35%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Budget total d'acquisition</div>
+          <div class="kpi-value" id="kpiBudget">—</div>
+          <div class="kpi-sub">Prix + notaire + agence + travaux</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Capital emprunté</div>
+          <div class="kpi-value" id="kpiLoan">—</div>
+          <div class="kpi-sub" id="kpiLoanNote">—</div>
+        </div>
+      </div>
+
+      <div class="banner" id="banner">—</div>
+
+      <table class="detail-table">
+        <tbody>
+          <tr><td>Prix du bien</td><td id="dProperty">—</td></tr>
+          <tr><td>Frais de notaire estimés</td><td id="dNotary">—</td></tr>
+          <tr><td>Frais d'agence + travaux</td><td id="dExtras">—</td></tr>
+          <tr class="row-total"><td><strong>Budget total d'acquisition</strong></td><td id="dBudget"><strong>—</strong></td></tr>
+          <tr><td>Apport total</td><td id="dDown">—</td></tr>
+          <tr><td>Frais de crédit (dossier + garantie + courtage)</td><td id="dLoanFees">—</td></tr>
+          <tr><td class="hint-cell">→ dont financés dans le prêt</td><td id="dFeesFinanced">—</td></tr>
+          <tr class="row-total"><td><strong>Capital emprunté</strong></td><td id="dLoan"><strong>—</strong></td></tr>
+          <tr><td>Intérêts totaux</td><td id="dInterest">—</td></tr>
+          <tr><td>Assurance totale</td><td id="dInsurance">—</td></tr>
+          <tr><td>Coût total du crédit</td><td id="dCreditCost">—</td></tr>
+          <tr><td>Total remboursé</td><td id="dTotalPaid">—</td></tr>
+          <tr class="row-sep"><td>TAEG estimatif (hors frais d'acquisition)</td><td id="dTaeg">—</td></tr>
+          <tr><td>Apport minimum conseillé</td><td id="dMinDown">—</td></tr>
+          <tr><td>Reste à vivre estimé / mois</td><td id="dRav">—</td></tr>
+          <tr><td>Capacité d'emprunt restante</td><td id="dCapacity">—</td></tr>
+        </tbody>
+      </table>
+
+      <p class="taeg-note">TAEG calculé sur les flux réels mensuels (IRR), assurance incluse, frais de crédit déduits du capital net reçu à t=0. Hors frais d'acquisition (notaire, agence, travaux) qui ne sont pas des coûts du crédit au sens réglementaire. Valeur indicative, non contractuelle.</p>
+
+      <div id="alertZone"></div>
+
+    </div>
+  </section>
+
+  <!-- Bar chart -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-amber">📈</span><span class="card-title">Répartition du coût total</span></div>
+    <div class="card-body">
+      <div class="chart-wrap" style="height:200px"><canvas id="chartBar"></canvas></div>
+      <p class="chart-note">Capital remboursé · Intérêts · Assurance · Frais de crédit</p>
+    </div>
+  </section>
+
+  <!-- Line chart -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-green">📉</span><span class="card-title">Capital restant dû dans le temps</span></div>
+    <div class="card-body">
+      <div class="chart-wrap" style="height:220px"><canvas id="chartLine"></canvas></div>
+      <p class="chart-note">Rouge = capital restant dû · Vert = capital remboursé cumulé</p>
+    </div>
+  </section>
+
+  <!-- Amortissement -->
+  <section class="card">
+    <div class="card-head"><span class="card-icon ci-blue">🗂</span><span class="card-title">Tableau d'amortissement</span></div>
+    <div class="card-body">
+      <div class="amort-controls">
+        <button class="amort-btn active" id="btnAnnuel">Vue annuelle</button>
+        <button class="amort-btn" id="btnMensuel">Vue mensuelle</button>
+        <button class="amort-btn ghost" id="btnCsv">⬇ Exporter CSV</button>
+      </div>
+      <div class="amort-wrap">
+        <table id="amortTable">
+          <thead>
+            <tr>
+              <th>Période</th><th>Mensualité</th><th>Capital</th>
+              <th>Intérêts</th><th>Assurance</th><th>Capital restant</th>
+            </tr>
+          </thead>
+          <tbody id="amortBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /col-results -->
+</div><!-- /layout -->
+
+<!-- Footer légal -->
+<footer class="legal-footer">
+  <strong>Avertissement légal :</strong> Cet outil est fourni à titre strictement indicatif et ne constitue ni une offre de crédit, ni un conseil financier, ni une garantie d'obtention d'un prêt. Les résultats reposent sur des hypothèses simplifiées (taux fixe, frais estimatifs, revenus déclarés non vérifiés) et peuvent différer significativement des conditions appliquées par un établissement prêteur.
+  <br><br>
+  Le <strong>TAEG réglementaire officiel</strong> vous sera communiqué par votre banque dans la fiche d'information standardisée européenne (FISE), conformément à la directive crédit immobilier 2014/17/UE. Consultez un professionnel du crédit (courtier agréé ORIAS, conseiller bancaire) avant toute décision d'investissement.
+  <br><br>
+  <strong>Revenus fonciers :</strong> La méthode de prise en compte varie selon les établissements et les profils emprunteurs. La méthode différentielle peut conduire à des résultats sensiblement différents de la méthode classique. Seule votre banque peut confirmer la méthode retenue pour votre dossier.
+</footer>
+</main>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  SIMULATEUR CRÉDIT IMMOBILIER
+//  Calculs rigoureux :
+//  - TAEG sur cashflows réels (valide avec assurance décroissante)
+//  - Circularité frais de garantie résolue par formule fermée
+//  - Charges existantes dans le taux d'endettement
+//  - Méthode classique vs différentielle pour revenus fonciers
+// ════════════════════════════════════════════════════════════
+
+'use strict';
+
+// ─── DOM helper ──────────────────────────────────────────────
+const el = id => document.getElementById(id);
+
+// ─── State ───────────────────────────────────────────────────
+let scheduleRows = [];
+let amortView    = 'annuel';
+let rentalMethod = 'classic';  // 'classic' | 'diff'
+let notaryMode   = 'rate';     // 'rate' | 'amount'
+let chartBar = null, chartLine = null;
+
+// ─── Formatters ──────────────────────────────────────────────
+const fmtEUR = n =>
+  Number.isFinite(n)
+    ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(n)) + ' €'
+    : '—';
+
+const fmtPct = (n, d = 2) =>
+  Number.isFinite(n) ? n.toFixed(d) + ' %' : '—';
+
+// ─── Input helpers ───────────────────────────────────────────
+function num(v) {
+  const x = parseFloat(v);
+  return Number.isFinite(x) && x >= 0 ? x : 0;
+}
+
+function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+/**
+ * Synchronise slider ↔ input numérique (bidirectionnel).
+ */
+function syncSlider(rangeId, numId, decimals) {
+  const range = el(rangeId), input = el(numId);
+  range.addEventListener('input', () => {
+    input.value = parseFloat(range.value).toFixed(decimals);
+    compute();
+  });
+  input.addEventListener('input', () => {
+    let v = parseFloat(input.value);
+    if (!Number.isFinite(v)) return;
+    const lo = parseFloat(range.min), hi = parseFloat(range.max);
+    const st = parseFloat(range.step) || 1;
+    v = Math.round((clamp(v, lo, hi) - lo) / st) * st + lo;
+    input.value = v.toFixed(decimals);
+    range.value = v.toFixed(decimals);
+    compute();
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+//  FINANCE CORE
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Mensualité (capital + intérêts) — annuité constante.
+ */
+function annuityPayment(principal, annualRate, months) {
+  if (principal <= 0 || months <= 0) return 0;
+  const r = annualRate / 12;
+  if (r === 0) return principal / months;
+  const pow = Math.pow(1 + r, months);
+  return principal * r * pow / (pow - 1);
+}
+
+/**
+ * Tableau d'amortissement complet.
+ * Gère assurance sur capital initial (constante) OU sur capital restant dû (décroissante).
+ */
+function buildSchedule({ principal, annualRate, months, insuranceAnnualRate, insuranceMode }) {
+  const r    = annualRate / 12;
+  const base = annuityPayment(principal, annualRate, months);
+  let crd    = principal;
+  const rows = [];
+  let totalInterest = 0, totalInsurance = 0;
+
+  for (let m = 1; m <= months; m++) {
+    const interest  = crd * r;
+    const capital   = Math.max(0, base - interest);
+    const insBase   = insuranceMode === 'outstanding' ? crd : principal;
+    const insurance = (insBase * insuranceAnnualRate) / 12;
+
+    crd = Math.max(0, crd - capital);
+    totalInterest  += interest;
+    totalInsurance += insurance;
+
+    rows.push({ month: m, payment: base, capital, interest, insurance, crd, total: base + insurance });
+    if (crd < 0.01) break;
+  }
+  return { rows, totalInterest, totalInsurance };
+}
+
+/**
+ * IRR mensuel par bissection sur cashflows réels.
+ *
+ * cashflows[0]  = montant net reçu par l'emprunteur à t=0 (POSITIF)
+ * cashflows[t>0]= sorties mensuelles (NÉGATIF)
+ *
+ * Utiliser les flux réels rend le calcul valide même avec
+ * une assurance décroissante (flux non constants).
+ */
+function solveMonthlyIRR(cashflows) {
+  if (!cashflows || cashflows.length < 2) return 0;
+  const npv = i => cashflows.reduce((s, cf, t) => s + cf / Math.pow(1 + i, t), 0);
+
+  let lo = -0.99, hi = 1.0;
+  let fLo = npv(lo), fHi = npv(hi);
+  for (let g = 0; fLo * fHi > 0 && g < 60 && hi < 200; g++) { hi *= 2; fHi = npv(hi); }
+  if (fLo * fHi > 0) return 0;
+
+  for (let k = 0; k < 140; k++) {
+    const mid = (lo + hi) / 2, fMid = npv(mid);
+    if (fLo * fMid <= 0) { hi = mid; fHi = fMid; }
+    else                  { lo = mid; fLo = fMid; }
+  }
+  return (lo + hi) / 2;
+}
+
+// ════════════════════════════════════════════════════════════
+//  READ INPUTS
+// ════════════════════════════════════════════════════════════
+function readInputs() {
+  const propertyPrice = num(el('propertyPrice').value);
+  const agencyFees    = num(el('agencyFees').value);
+  const works         = num(el('works').value);
+
+  const notaryFees = notaryMode === 'amount'
+    ? num(el('notaryAmount').value)
+    : propertyPrice * num(el('notaryRateNum').value) / 100;
+
+  const downPayment    = num(el('downPayment').value);
+  const loanYears      = clamp(num(el('loanYearsNum').value), 5, 25);
+  const annualRate     = clamp(num(el('interestRateNum').value), 0.01, 25) / 100;
+  const insuranceRate  = clamp(num(el('insuranceRateNum').value), 0, 10) / 100;
+  const insuranceMode  = el('insuranceMode').value;
+  const fileFees       = num(el('fileFees').value);
+  const guaranteePct   = clamp(num(el('guaranteeRateNum').value), 0, 10);
+  const brokerFees     = num(el('brokerFees').value);
+  const financeFees    = el('financeLoanFees').checked;
+  const income1        = num(el('income1').value);
+  const income2        = num(el('income2').value);
+  const rentalIncome   = num(el('rentalIncome').value);
+  const rentalFactor   = rentalMethod === 'diff' ? 100 : clamp(num(el('rentalFactorNum').value), 0, 100);
+  const existingChg    = num(el('existingCharges').value);
+  const debtCap        = clamp(num(el('debtCapNum').value), 10, 60) / 100;
+
+  return {
+    propertyPrice, agencyFees, works, notaryFees,
+    downPayment, loanYears, annualRate, insuranceRate, insuranceMode,
+    fileFees, guaranteePct, brokerFees, financeFees,
+    income1, income2, rentalIncome, rentalFactor,
+    existingChg, debtCap,
+  };
+}
+
+// ════════════════════════════════════════════════════════════
+//  COMPUTE
+// ════════════════════════════════════════════════════════════
+function computeResults(s) {
+  const months     = Math.round(s.loanYears * 12);
+  const budgetTotal = s.propertyPrice + s.notaryFees + s.agencyFees + s.works;
+  const guaranteeRate  = s.guaranteePct / 100;
+  const fixedLoanFees  = s.fileFees + s.brokerFees;
+
+  // ── Capital & frais : résolution de la circularité garantie ──
+  //
+  // Si les frais sont financés dans le prêt :
+  //   capital = (besoin_hors_garantie) / (1 - taux_garantie)
+  //   formule fermée évitant la circularité
+  //
+  let principal, guaranteeFees, totalLoanFees, feesFinancedAmt;
+
+  if (s.financeFees) {
+    const baseNeed = Math.max(0, budgetTotal + fixedLoanFees - s.downPayment);
+    principal       = guaranteeRate < 1
+      ? Math.max(0, baseNeed / (1 - guaranteeRate))
+      : Math.max(0, baseNeed);
+    guaranteeFees   = principal * guaranteeRate;
+    totalLoanFees   = fixedLoanFees + guaranteeFees;
+    feesFinancedAmt = totalLoanFees;
+  } else {
+    const baseCapital = Math.max(0, budgetTotal - s.downPayment);
+    guaranteeFees     = baseCapital * guaranteeRate;
+    totalLoanFees     = fixedLoanFees + guaranteeFees;
+    principal         = baseCapital;
+    feesFinancedAmt   = 0;
+  }
+  principal = Math.max(0, principal);
+
+  // Apport minimum conseillé
+  const minDown = s.notaryFees + s.agencyFees + (s.financeFees ? 0 : totalLoanFees);
+
+  // ── Amortissement ──
+  const sched = buildSchedule({
+    principal,
+    annualRate:          s.annualRate,
+    months,
+    insuranceAnnualRate: s.insuranceRate,
+    insuranceMode:       s.insuranceMode,
+  });
+  scheduleRows = sched.rows;
+
+  const m1         = sched.rows[0] || {};
+  const monthly1   = m1.total   || 0;
+  const basePaymt1 = m1.payment || 0;
+  const insurance1 = m1.insurance || 0;
+
+  const totalInterest  = sched.totalInterest;
+  const totalInsurance = sched.totalInsurance;
+  const totalPaid      = sched.rows.reduce((a, r) => a + r.total, 0);
+  const creditCost     = totalInterest + totalInsurance + totalLoanFees;
+
+  // ── Revenus & endettement ──
+  let incomeUsed, chargesUsed;
+  if (rentalMethod === 'diff') {
+    // Méthode différentielle : loyers déduits des charges existantes
+    const netExisting = Math.max(0, s.existingChg - s.rentalIncome);
+    incomeUsed  = s.income1 + s.income2;
+    chargesUsed = netExisting + monthly1;
+  } else {
+    // Méthode classique : loyers pondérés ajoutés aux revenus
+    const rentalWeighted = s.rentalIncome * (s.rentalFactor / 100);
+    incomeUsed  = s.income1 + s.income2 + rentalWeighted;
+    chargesUsed = s.existingChg + monthly1;
+  }
+
+  const debtRatio      = incomeUsed > 0 ? chargesUsed / incomeUsed : 0;
+  const maxMonthlyDebt = incomeUsed * s.debtCap;
+  const remainCapacity = Math.max(0, maxMonthlyDebt - chargesUsed);
+  const rav            = Math.max(0, incomeUsed - chargesUsed);
+
+  // ── TAEG sur cashflows réels ──
+  // t=0 : emprunteur reçoit capital net (frais comptant déduits si non financés)
+  // t>0 : emprunteur verse mensualité réelle (base + assurance du mois t)
+  const netReceived = s.financeFees ? principal : principal - totalLoanFees;
+  const cashflows   = [netReceived, ...sched.rows.map(r => -(r.total))];
+  const irrM        = solveMonthlyIRR(cashflows);
+  const taeg        = (Math.pow(1 + irrM, 12) - 1) * 100;
+
+  // ── Alertes ──
+  const alerts = [];
+  if (s.propertyPrice > 0 && s.downPayment < s.notaryFees) {
+    alerts.push({ type: 'bad', msg: `Apport (${fmtEUR(s.downPayment)}) inférieur aux frais de notaire estimés (${fmtEUR(s.notaryFees)}). Les banques exigent généralement que l'apport couvre au minimum les frais de notaire.` });
+  } else if (s.downPayment < minDown) {
+    alerts.push({ type: 'warn', msg: `Apport potentiellement insuffisant. Apport minimum conseillé pour couvrir tous les frais : ${fmtEUR(minDown)}.` });
+  }
+  if (incomeUsed <= 0) {
+    alerts.push({ type: 'warn', msg: 'Renseignez au moins un revenu pour obtenir un taux d\'endettement calculé.' });
+  }
+  if (s.annualRate < 0.005) {
+    alerts.push({ type: 'warn', msg: 'Taux nominal très faible (< 0.5%). Vérifiez la saisie.' });
+  }
+
+  return {
+    months, budgetTotal, principal, totalLoanFees, feesFinancedAmt, guaranteeFees, minDown,
+    monthly1, basePaymt1, insurance1,
+    totalInterest, totalInsurance, totalPaid, creditCost,
+    incomeUsed, chargesUsed, debtRatio, remainCapacity, rav,
+    taeg, alerts,
+  };
+}
+
+// ════════════════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════════════════
+function render(s, r) {
+
+  // KPIs
+  el('kpiMonthly').textContent      = r.principal > 0 ? fmtEUR(r.monthly1) : '—';
+  el('kpiMonthlySplit').textContent = r.principal > 0
+    ? `Crédit ${fmtEUR(r.basePaymt1)} + assurance ${fmtEUR(r.insurance1)}`
+    : 'Aucun emprunt nécessaire';
+
+  const debtPct = r.debtRatio * 100;
+  el('kpiDebt').textContent     = r.incomeUsed > 0 ? fmtPct(debtPct, 1) : '—';
+  el('kpiCapacity').textContent = r.incomeUsed > 0
+    ? `Restant à ${fmtPct(s.debtCap * 100, 0)} : ${fmtEUR(r.remainCapacity)}/mois`
+    : `Seuil cible : ${fmtPct(s.debtCap * 100, 0)}`;
+
+  el('kpiBudget').textContent  = fmtEUR(r.budgetTotal);
+  el('kpiLoan').textContent    = r.principal > 0 ? fmtEUR(r.principal) : '—';
+  el('kpiLoanNote').textContent = s.financeFees
+    ? `Dont ${fmtEUR(r.totalLoanFees)} de frais financés`
+    : 'Frais de crédit couverts par l\'apport';
+
+  // Bannière
+  const banner = el('banner');
+  banner.className = 'banner';
+  if (r.incomeUsed <= 0) {
+    banner.textContent = '⏳ Renseignez vos revenus pour évaluer la faisabilité.';
+  } else if (r.principal <= 0) {
+    banner.classList.add('ok');
+    banner.textContent = '✓ Apport suffisant — aucun emprunt nécessaire.';
+  } else if (debtPct <= s.debtCap * 100 - 2) {
+    banner.classList.add('ok');
+    banner.textContent = `✓ Endettement confortable : ${fmtPct(debtPct, 1)} — sous le seuil de ${fmtPct(s.debtCap * 100, 0)}.`;
+  } else if (debtPct <= s.debtCap * 100) {
+    banner.classList.add('warn');
+    banner.textContent = `⚠ Endettement limite : ${fmtPct(debtPct, 1)} — proche du seuil. Faisabilité dépend du profil bancaire.`;
+  } else {
+    banner.classList.add('bad');
+    banner.textContent = `✗ Endettement trop élevé : ${fmtPct(debtPct, 1)} dépasse le seuil HCSF (${fmtPct(s.debtCap * 100, 0)}). Augmentez l'apport, la durée ou réduisez le montant emprunté.`;
+  }
+
+  // Détails
+  el('dProperty').textContent   = fmtEUR(s.propertyPrice);
+  el('dNotary').textContent     = fmtEUR(s.notaryFees);
+  el('dExtras').textContent     = fmtEUR(s.agencyFees + s.works);
+  el('dBudget').innerHTML       = `<strong>${fmtEUR(r.budgetTotal)}</strong>`;
+  el('dDown').textContent       = fmtEUR(s.downPayment);
+  el('dLoanFees').textContent   = fmtEUR(r.totalLoanFees);
+  el('dFeesFinanced').textContent = s.financeFees
+    ? fmtEUR(r.feesFinancedAmt) : '0 € (payés comptant)';
+  el('dLoan').innerHTML         = `<strong>${fmtEUR(r.principal)}</strong>`;
+  el('dInterest').textContent   = fmtEUR(r.totalInterest);
+  el('dInsurance').textContent  = fmtEUR(r.totalInsurance);
+  el('dCreditCost').textContent = fmtEUR(r.creditCost);
+  el('dTotalPaid').textContent  = fmtEUR(r.totalPaid);
+  el('dTaeg').textContent       = r.principal > 0 ? fmtPct(r.taeg, 2) : '—';
+  el('dMinDown').textContent    = fmtEUR(r.minDown);
+  el('dRav').textContent        = r.incomeUsed > 0 ? fmtEUR(r.rav) + '/mois' : '—';
+  el('dCapacity').textContent   = r.incomeUsed > 0 ? fmtEUR(r.remainCapacity) + '/mois' : '—';
+
+  // Alertes
+  const zone = el('alertZone');
+  zone.innerHTML = '';
+  r.alerts.forEach(a => {
+    const d = document.createElement('div');
+    d.className = `alert-box ${a.type}`;
+    d.innerHTML = `<span class="ai">${a.type === 'bad' ? '✗' : '⚠'}</span><span>${a.msg}</span>`;
+    zone.appendChild(d);
+  });
+
+  // Notaire estimate
+  if (notaryMode === 'rate') {
+    el('notaryEstimate').textContent = `Estimation : ${fmtEUR(s.notaryFees)} pour ce bien`;
+  }
+
+  // Apport hint
+  el('downHint').textContent =
+    `Frais de notaire : ${fmtEUR(s.notaryFees)} · Frais de crédit : ${fmtEUR(r.totalLoanFees)} · Apport minimum conseillé : ${fmtEUR(r.minDown)}`;
+
+  // Charts
+  renderBarChart(r.principal, r.totalInterest, r.totalInsurance, r.totalLoanFees);
+  renderLineChart(scheduleRows);
+  renderAmortTable();
+}
+
+// ═══════════════════  CHARTS  ═══════════════════
+
+function renderBarChart(capital, interest, insurance, fees) {
+  const ctx = el('chartBar').getContext('2d');
+  if (chartBar) { chartBar.destroy(); chartBar = null; }
+  chartBar = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Capital remboursé', 'Intérêts', 'Assurance', 'Frais de crédit'],
+      datasets: [{ data: [capital, interest, insurance, fees],
+        backgroundColor: ['#1e3a5f', '#c0392b', '#d97706', '#64748b'],
+        borderRadius: 4, borderWidth: 0 }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => ' ' + fmtEUR(c.raw) } } },
+      scales: {
+        y: { grid: { color: '#f0ece4' },
+          ticks: { callback: v => new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(v) + ' €', font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+function renderLineChart(rows) {
+  const ctx = el('chartLine').getContext('2d');
+  if (chartLine) { chartLine.destroy(); chartLine = null; }
+  if (!rows.length) return;
+
+  const yearCount = Math.ceil(rows.length / 12);
+  const years = [], crds = [], cumCap = [];
+  let cumC = 0;
+
+  for (let y = 0; y < yearCount; y++) {
+    const slice = rows.slice(y * 12, (y + 1) * 12);
+    cumC += slice.reduce((s, r) => s + r.capital, 0);
+    years.push(`A${y + 1}`);
+    crds.push(Math.round(slice[slice.length - 1].crd));
+    cumCap.push(Math.round(cumC));
+  }
+
+  chartLine = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Capital restant dû', data: crds,
+          borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,.08)',
+          fill: true, tension: 0.3, pointRadius: 2 },
+        { label: 'Capital remboursé (cumulé)', data: cumCap,
+          borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,.06)',
+          fill: true, tension: 0.3, pointRadius: 2, borderDash: [4, 3] },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { font: { size: 11 }, boxWidth: 14 } },
+        tooltip: { callbacks: { label: c => ' ' + fmtEUR(c.raw) } },
+      },
+      scales: {
+        y: { grid: { color: '#f0ece4' },
+          ticks: { callback: v => new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(v) + '€', font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxTicksLimit: 13 } },
+      },
+    },
+  });
+}
+
+// ═══════════════════  AMORT TABLE  ═══════════════════
+
+function renderAmortTable() {
+  const tbody = el('amortBody');
+  tbody.innerHTML = '';
+  if (!scheduleRows.length) return;
+
+  if (amortView === 'mensuel') {
+    scheduleRows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>Mois ${r.month}</td><td>${fmtEUR(r.total)}</td><td>${fmtEUR(r.capital)}</td><td>${fmtEUR(r.interest)}</td><td>${fmtEUR(r.insurance)}</td><td>${fmtEUR(r.crd)}</td>`;
+      tbody.appendChild(tr);
+    });
+  } else {
+    const years = Math.ceil(scheduleRows.length / 12);
+    for (let y = 0; y < years; y++) {
+      const sl = scheduleRows.slice(y * 12, (y + 1) * 12);
+      const tr = document.createElement('tr');
+      tr.className = 'year-row';
+      tr.innerHTML = `<td>Année ${y + 1}</td><td>${fmtEUR(sl.reduce((s, r) => s + r.total, 0))}</td><td>${fmtEUR(sl.reduce((s, r) => s + r.capital, 0))}</td><td>${fmtEUR(sl.reduce((s, r) => s + r.interest, 0))}</td><td>${fmtEUR(sl.reduce((s, r) => s + r.insurance, 0))}</td><td>${fmtEUR(sl[sl.length - 1].crd)}</td>`;
+      tbody.appendChild(tr);
     }
+  }
+}
 
-    function formatNumber(num) {
-      return new Intl.NumberFormat('fr-FR').format(Math.round(num));
-    }
+// ═══════════════════  CSV  ═══════════════════
 
-    // Mensualité (capital + intérêts)
-    function annuityPayment(principal, annualRate, months) {
-      const r = annualRate / 12;
-      if (months <= 0) return 0;
-      if (r === 0) return principal / months;
-      return principal * (r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
-    }
+function exportCsv() {
+  if (!scheduleRows.length) return;
+  const lines = ['Mois;Mensualité totale;Capital;Intérêts;Assurance;Capital restant dû'];
+  scheduleRows.forEach(r => lines.push(
+    [r.month, Math.round(r.total), Math.round(r.capital),
+     Math.round(r.interest), Math.round(r.insurance), Math.round(r.crd)].join(';')
+  ));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'amortissement.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
 
-    // IRR mensuel par dichotomie : PV(des mensualités) = capital net reçu
-    function solveMonthlyIRR(receivedAmount, monthlyPayment, months) {
-      if (months <= 0) return 0;
-      if (monthlyPayment <= 0) return 0;
+// ═══════════════════  MAIN COMPUTE  ═══════════════════
 
-      // Si le total payé est <= capital reçu, le taux équivalent est <= 0 (cas limite)
-      if (monthlyPayment * months <= receivedAmount) return 0;
+function compute() {
+  const s = readInputs();
+  const r = computeResults(s);
+  render(s, r);
+}
 
-      const pv = (i) => {
-        if (i === 0) return monthlyPayment * months;
-        return monthlyPayment * (1 - Math.pow(1 + i, -months)) / i;
-      };
+// ════════════════════════════════════════════════════════════
+//  BINDINGS
+// ════════════════════════════════════════════════════════════
 
-      let lo = 0;
-      let hi = 1;
+// Sliders synchronisés
+syncSlider('notaryRate',    'notaryRateNum',    1);
+syncSlider('loanYears',     'loanYearsNum',     0);
+syncSlider('interestRate',  'interestRateNum',  2);
+syncSlider('insuranceRate', 'insuranceRateNum', 2);
+syncSlider('guaranteeRate', 'guaranteeRateNum', 1);
+syncSlider('rentalFactor',  'rentalFactorNum',  0);
+syncSlider('debtCap',       'debtCapNum',       1);
 
-      // On élargit le hi jusqu'à ce que PV(hi) <= receivedAmount (PV décroît quand i augmente)
-      while (pv(hi) > receivedAmount && hi < 10) {
-        hi *= 2;
-      }
+// Champs numériques libres
+[
+  'propertyPrice', 'agencyFees', 'works', 'downPayment', 'notaryAmount',
+  'fileFees', 'brokerFees', 'income1', 'income2', 'rentalIncome', 'existingCharges',
+].forEach(id => el(id).addEventListener('input', compute));
 
-      for (let k = 0; k < 120; k++) {
-        const mid = (lo + hi) / 2;
-        if (pv(mid) > receivedAmount) lo = mid;
-        else hi = mid;
-      }
+// Select & checkbox
+el('insuranceMode').addEventListener('change', compute);
+el('financeLoanFees').addEventListener('change', compute);
 
-      return (lo + hi) / 2;
-    }
+// Toggle frais de notaire
+function setNotaryMode(mode, preset, rateVal) {
+  notaryMode = mode;
+  el('notaryRateWrap').classList.toggle('hidden', mode === 'amount');
+  el('notaryAmountWrap').classList.toggle('hidden', mode !== 'amount');
+  ['btnAnc', 'btnNeuf', 'btnMontant'].forEach(id => el(id).classList.remove('active'));
+  el(preset).classList.add('active');
+  if (rateVal !== undefined) {
+    el('notaryRate').value    = rateVal;
+    el('notaryRateNum').value = rateVal;
+  }
+  compute();
+}
+el('btnAnc').addEventListener('click',     () => setNotaryMode('rate', 'btnAnc', 7.5));
+el('btnNeuf').addEventListener('click',    () => setNotaryMode('rate', 'btnNeuf', 2.5));
+el('btnMontant').addEventListener('click', () => setNotaryMode('amount', 'btnMontant'));
 
-    function calculateLoan() {
-      // Inputs
-      const loanAmount = Math.max(0, toNumber('loanAmount'));
-      const downPayment = Math.max(0, toNumber('downPayment'));
-      const durationYears = Math.max(1, parseInt(document.getElementById('loanDuration').value, 10));
-      const rate = Math.max(0, parseFloat(document.getElementById('interestRate').value) / 100);
-      const insuranceRate = Math.max(0, parseFloat(document.getElementById('insurance').value) / 100);
-      const monthlyIncome = Math.max(0, toNumber('monthlyIncome'));
+// Toggle méthode revenus fonciers
+el('methodClassic').addEventListener('click', () => {
+  rentalMethod = 'classic';
+  el('methodClassic').classList.add('active');
+  el('methodDiff').classList.remove('active');
+  el('methodClassicInfo').classList.remove('hidden');
+  el('methodDiffInfo').classList.add('hidden');
+  compute();
+});
+el('methodDiff').addEventListener('click', () => {
+  rentalMethod = 'diff';
+  el('methodDiff').classList.add('active');
+  el('methodClassic').classList.remove('active');
+  el('methodDiffInfo').classList.remove('hidden');
+  el('methodClassicInfo').classList.add('hidden');
+  compute();
+});
 
-      // Affichages inputs
-      document.getElementById('durationDisplay').textContent = durationYears + (durationYears > 1 ? ' années' : ' année');
-      document.getElementById('rateDisplay').textContent = (rate * 100).toFixed(2) + '%';
-      document.getElementById('insuranceDisplay').textContent = (insuranceRate * 100).toFixed(2) + '%';
+// Vue amortissement
+el('btnAnnuel').addEventListener('click', () => {
+  amortView = 'annuel';
+  el('btnAnnuel').classList.add('active');
+  el('btnMensuel').classList.remove('active');
+  renderAmortTable();
+});
+el('btnMensuel').addEventListener('click', () => {
+  amortView = 'mensuel';
+  el('btnMensuel').classList.add('active');
+  el('btnAnnuel').classList.remove('active');
+  renderAmortTable();
+});
 
-      const months = durationYears * 12;
+el('btnCsv').addEventListener('click', exportCsv);
 
-      // Mensualité hors assurance
-      const monthlyCapitalInterest = annuityPayment(loanAmount, rate, months);
-
-      // Assurance (modèle : sur capital initial, mensualité constante)
-      const monthlyInsurance = (loanAmount * insuranceRate) / 12;
-
-      // Charge totale mensuelle
-      const totalMonthlyPayment = monthlyCapitalInterest + monthlyInsurance;
-
-      // Totaux
-      const totalInterestPaid = (monthlyCapitalInterest * months) - loanAmount;
-      const totalInsurancePaid = monthlyInsurance * months;
-
-      // Coût total du crédit (hors remboursement du capital)
-      const totalCost = totalInterestPaid + totalInsurancePaid;
-
-      // Endettement
-      const debtRatio = monthlyIncome > 0 ? (totalMonthlyPayment / monthlyIncome) * 100 : 0;
-
-      // Capacité restante (plafond 35%)
-      const maxDebtCapacity = monthlyIncome * 0.35;
-      const remainingCapacity = Math.max(0, maxDebtCapacity - totalMonthlyPayment);
-
-      // ✅ VRAI TAEG : taux équivalent (IRR) annualisé sur les flux mensuels
-      // Capital net reçu = loanAmount (pas de frais intégrés ici)
-      const monthlyIrr = solveMonthlyIRR(loanAmount, totalMonthlyPayment, months);
-      const taeg = Math.pow(1 + monthlyIrr, 12) - 1;
-
-      // Outputs
-      document.getElementById('monthlyPayment').textContent = formatNumber(totalMonthlyPayment) + ' €';
-      document.getElementById('totalCost').textContent = formatNumber(totalCost) + ' €';
-      document.getElementById('debtRatio').textContent = debtRatio.toFixed(1) + '%';
-
-      document.getElementById('totalPrice').textContent = formatNumber(loanAmount + downPayment) + ' €';
-      document.getElementById('financedAmount').textContent = formatNumber(loanAmount) + ' €';
-      document.getElementById('totalInterest').textContent = formatNumber(totalInterestPaid) + ' €';
-      document.getElementById('totalInsurance').textContent = formatNumber(totalInsurancePaid) + ' €';
-      document.getElementById('apr').textContent = (taeg * 100).toFixed(2) + '%';
-      document.getElementById('remainingCapacity').textContent = formatNumber(remainingCapacity) + ' €/mois';
-
-      // Faisabilité (logique conservée, calculs corrects)
-      const indicator = document.getElementById('feasibilityIndicator');
-      if (monthlyIncome === 0) {
-        indicator.style.background = '#fef3c7';
-        indicator.style.color = '#92400e';
-        indicator.style.borderColor = '#f59e0b';
-        indicator.textContent = '⚠ Veuillez renseigner vos revenus';
-      } else if (debtRatio <= 33) {
-        indicator.style.background = '#d1fae5';
-        indicator.style.color = '#065f46';
-        indicator.style.borderColor = '#10b981';
-        indicator.textContent = '✓ Votre projet est finançable';
-      } else if (debtRatio <= 35) {
-        indicator.style.background = '#fef3c7';
-        indicator.style.color = '#92400e';
-        indicator.style.borderColor = '#f59e0b';
-        indicator.textContent = '⚠ Financement possible mais serré';
-      } else {
-        indicator.style.background = '#fee2e2';
-        indicator.style.color = '#991b1b';
-        indicator.style.borderColor = '#ef4444';
-        indicator.textContent = '✗ Taux d\'endettement trop élevé';
-      }
-    }
-
-    // Events
-    ['loanAmount','downPayment','loanDuration','interestRate','insurance','monthlyIncome']
-      .forEach(id => document.getElementById(id).addEventListener('input', calculateLoan));
-
-    // Initial calc
-    calculateLoan();
-  </script>
+// Initialisation
+compute();
+</script>
 </body>
 </html>
