@@ -764,8 +764,12 @@ function computeResults(s) {
   // ── TAEG sur cashflows réels ──
   // t=0 : emprunteur reçoit capital net (frais comptant déduits si non financés)
   // t>0 : emprunteur verse mensualité réelle (base + assurance du mois t)
-  const netReceived = s.financeFees ? principal : principal - totalLoanFees;
-  const cashflows   = [netReceived, ...sched.rows.map(r => -(r.total))];
+const netReceived = Math.max(0, principal - totalLoanFees);
+
+const cashflows = [
+  netReceived,
+  ...sched.rows.map(r => -(r.total))
+];
   const irrM        = solveMonthlyIRR(cashflows);
   const taeg        = (Math.pow(1 + irrM, 12) - 1) * 100;
 
